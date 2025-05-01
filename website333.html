@@ -1331,6 +1331,90 @@
 
     // ...existing code...
 </script>
+<script>
+    let ws;
+    let currentChatFriend = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const username = localStorage.getItem('loggedInUser');
+        if (!username) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        ws = new WebSocket('ws://localhost:8080');
+
+        ws.onopen = () => {
+            ws.send(JSON.stringify({ type: 'login', username }));
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            switch (data.type) {
+                case 'syncMessages':
+                    syncMessages(data.messages);
+                    break;
+                case 'newMessage':
+                    if (data.sender === currentChatFriend) {
+                        displayNewMessage(data.sender, data.text, new Date(data.timestamp).toLocaleTimeString(), false);
+                    }
+                    break;
+            }
+        };
+
+        ws.onclose = () => {
+            console.log('Disconnected from server');
+        };
+    });
+
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const messageText = input.value.trim();
+
+        if (messageText && currentChatFriend) {
+            const username = localStorage.getItem('loggedInUser');
+            const timestamp = Date.now();
+
+            ws.send(JSON.stringify({
+                type: 'sendMessage',
+                sender: username,
+                recipient: currentChatFriend,
+                text: messageText,
+                timestamp
+            }));
+
+            displayNewMessage(username, messageText, new Date(timestamp).toLocaleTimeString(), true);
+            input.value = '';
+        }
+    }
+
+    function syncMessages(messages) {
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+
+        if (messages[currentChatFriend]) {
+            messages[currentChatFriend].forEach((msg) => {
+                const isSent = msg.sender === localStorage.getItem('loggedInUser');
+                displayNewMessage(msg.sender, msg.text, new Date(msg.timestamp).toLocaleTimeString(), isSent);
+            });
+        }
+    }
+
+    function displayNewMessage(sender, text, time, isSent) {
+        const chatMessages = document.getElementById('chatMessages');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isSent ? 'message-sent' : 'message-received'}`;
+        messageDiv.innerHTML = `
+            ${text}
+            <div class="message-time">${time}</div>
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+</script>
 
 </body>
 </html>
