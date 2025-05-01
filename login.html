@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | learn.com</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #58bc82;
+            --primary-dark: #40855d;
+            --primary-light: #e0f0e6;
+            --text-color: #333;
+            --light-gray: #f8f9fa;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url('top-view-pens-pencils-with-copy-space.jpg') no-repeat center center fixed;
+            background-size: cover;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary-color), #6e8efb);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 16px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            transition: all 0.3s;
+            background-color: var(--light-gray);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(88, 188, 130, 0.2);
+            background-color: white;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #eee;
+        }
+
+        .divider::before {
+            margin-right: 15px;
+        }
+
+        .divider::after {
+            margin-left: 15px;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .signup-link a {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .signup-link a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-3px);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-color);
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-container {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Error message */
+        .error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Success message */
+        .success-message {
+            color: var(--primary-color);
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="login-container">
+        <div class="logo">
+            <h1>learn.com</h1>
+            <p>Continue your learning journey</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" class="form-control" placeholder="Enter your username" required>
+                </div>
+                <div class="error-message" id="usernameError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                    <span class="toggle-password" onclick="togglePasswordVisibility()">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+
+            <button type="submit" class="btn-login">Log In</button>
+            <div class="success-message" id="loginSuccess"></div>
+        </form>
+
+        <div class="divider">or</div>
+
+        <form id="signupForm" style="display: none;">
+            <div class="form-group">
+                <label for="signupUsername">Username</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="signupUsername" class="form-control" placeholder="Choose a username" required>
+                </div>
+                <div class="error-message" id="signupUsernameError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="signupEmail">Email</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="error-message" id="signupEmailError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="signupPassword" class="form-control" placeholder="Create a password" required>
+                    <span class="toggle-password" onclick="toggleSignupPasswordVisibility()">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+                <div class="error-message" id="signupPasswordError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                </div>
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+
+            <button type="submit" class="btn-login">Sign Up</button>
+            <div class="success-message" id="signupSuccess"></div>
+        </form>
+
+        <div class="signup-link">
+            <span id="toggleFormText">Don't have an account? </span>
+            <a href="#" id="toggleFormLink">Sign up</a>
+        </div>
+    </div>
+
+    <script>
+        // Initialize localStorage with users if empty
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify({}));
+            }
+        });
+
+        // Toggle between login and signup forms
+        const toggleFormLink = document.getElementById('toggleFormLink');
+        const toggleFormText = document.getElementById('toggleFormText');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+
+        toggleFormLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                toggleFormLink.textContent = 'Sign up';
+                toggleFormText.textContent = "Don't have an account? ";
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                toggleFormLink.textContent = 'Log in';
+                toggleFormText.textContent = "Already have an account? ";
+            }
+            
+            // Clear all error messages
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Clear all success messages
+            document.querySelectorAll('.success-message').forEach(el => {
+                el.style.display = 'none';
+            });
+        });
+
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.querySelector('.toggle-password i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        function toggleSignupPasswordVisibility() {
+            const passwordInput = document.getElementById('signupPassword');
+            const eyeIcon = document.querySelectorAll('.toggle-password i')[1];
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Login form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            // Clear previous errors
+            document.getElementById('usernameError').style.display = 'none';
+            document.getElementById('passwordError').style.display = 'none';
+            document.getElementById('loginSuccess').style.display = 'none';
+            
+            // Validate inputs
+            if (!username) {
+                document.getElementById('usernameError').textContent = 'Username is required';
+                document.getElementById('usernameError').style.display = 'block';
+                return;
+            }
+            
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'Password is required';
+                document.getElementById('passwordError').style.display = 'block';
+                return;
+            }
+            
+            // Check if user exists
+            if (!users[username]) {
+                document.getElementById('usernameError').textContent = 'Username not found';
+                document.getElementById('usernameError').style.display = 'block';
+                return;
+            }
+            
+            // Check password
+            if (users[username].password !== password) {
+                document.getElementById('passwordError').textContent = 'Incorrect password';
+                document.getElementById('passwordError').style.display = 'block';
+                return;
+            }
+            
+            // Login successful
+            localStorage.setItem('loggedInUser', username);
+            
+            // Show success message
+            document.getElementById('loginSuccess').textContent = 'Login successful! Redirecting...';
+            document.getElementById('loginSuccess').style.display = 'block';
+            
+            // Redirect to main page after a delay
+            setTimeout(function() {
+                window.location.href = 'website333.html';
+            }, 1000);
+        });
+
+        // Signup form submission
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('signupUsername').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            // Clear previous errors
+            document.getElementById('signupUsernameError').style.display = 'none';
+            document.getElementById('signupEmailError').style.display = 'none';
+            document.getElementById('signupPasswordError').style.display = 'none';
+            document.getElementById('confirmPasswordError').style.display = 'none';
+            document.getElementById('signupSuccess').style.display = 'none';
+            
+            // Validate inputs
+            if (!username) {
+                document.getElementById('signupUsernameError').textContent = 'Username is required';
+                document.getElementById('signupUsernameError').style.display = 'block';
+                return;
+            }
+            
+            if (username.length < 4) {
+                document.getElementById('signupUsernameError').textContent = 'Username must be at least 4 characters';
+                document.getElementById('signupUsernameError').style.display = 'block';
+                return;
+            }
+            
+            if (users[username]) {
+                document.getElementById('signupUsernameError').textContent = 'Username already exists';
+                document.getElementById('signupUsernameError').style.display = 'block';
+                return;
+            }
+            
+            if (!email) {
+                document.getElementById('signupEmailError').textContent = 'Email is required';
+                document.getElementById('signupEmailError').style.display = 'block';
+                return;
+            }
+            
+            if (!/^\S+@\S+\.\S+$/.test(email)) {
+                document.getElementById('signupEmailError').textContent = 'Please enter a valid email';
+                document.getElementById('signupEmailError').style.display = 'block';
+                return;
+            }
+            
+            if (!password) {
+                document.getElementById('signupPasswordError').textContent = 'Password is required';
+                document.getElementById('signupPasswordError').style.display = 'block';
+                return;
+            }
+            
+            if (password.length < 6) {
+                document.getElementById('signupPasswordError').textContent = 'Password must be at least 6 characters';
+                document.getElementById('signupPasswordError').style.display = 'block';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
+                document.getElementById('confirmPasswordError').style.display = 'block';
+                return;
+            }
+            
+            // Create new user
+            users[username] = {
+                password: password,
+                email: email,
+                name: username,
+                joinDate: new Date().toLocaleDateString(),
+                profilePic: null,
+                friends: [],
+                courses: [],
+                bio: "",
+                accounts: []
+            };
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Show success message
+            document.getElementById('signupSuccess').textContent = 'Account created successfully! You can now log in.';
+            document.getElementById('signupSuccess').style.display = 'block';
+            
+            // Clear form
+            document.getElementById('signupUsername').value = '';
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            // Switch back to login form after a delay
+            setTimeout(function() {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                toggleFormLink.textContent = 'Sign up';
+                toggleFormText.textContent = "Don't have an account? ";
+                document.getElementById('signupSuccess').style.display = 'none';
+            }, 2000);
+        });
+
+        // Check if user is already logged in and redirect
+        window.addEventListener('load', function() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                window.location.href = 'website333.html';
+            }
+        });
+    </script>
+</body>
+</html>

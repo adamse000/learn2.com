@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>learn.com</title>
+    <link rel="stylesheet" href="web333.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom profile dropdown styles */
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .profile-dropdown {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .profile-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .profile-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .dropdown-content {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            z-index: 1000;
+        }
+        
+        .dropdown-content.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        
+        .profile-header .profile-icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 12px;
+        }
+        
+        .profile-info h5 {
+            margin-bottom: 2px;
+            font-weight: 600;
+        }
+        
+        .profile-info p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 0;
+        }
+        
+        .dropdown-item {
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 3px 0;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .dropdown-item i {
+            margin-right: 10px;
+            color: #555;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .accounts-section, .friends-section {
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+        
+        .friends-count {
+            background-color: #6e8efb;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        /* Profile page styles */
+        .profile-page {
+            display: none;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .profile-header-large {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-pic-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 30px;
+            border: 4px solid #58bc82;
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #58bc82;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .profile-bio {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .edit-bio {
+            display: none;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        
+        .btn-edit {
+            background-color: #58bc82;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-edit:hover {
+            background-color: #40855d;
+        }
+
+        /* Friends list styles */
+        .friends-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .friends-container {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .friends-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 10;
+        }
+
+        .friends-header h3 {
+            margin: 0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close-friends {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .friends-list {
+            padding: 15px;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .friend-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .friend-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .friend-status {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .online {
+            color: #58bc82;
+        }
+
+        .offline {
+            color: #999;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .friend-action-btn {
+            background: none;
+            border: none;
+            color: #6e8efb;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .friend-action-btn:hover {
+            background-color: #f0f4ff;
+        }
+
+        .no-friends {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+
+        .no-friends i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        /* Add transition for modal closing */
+        .friends-modal {
+            opacity: 1;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .friends-modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-logo me-auto" href="#"><strong>learn.com</strong></a> 
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">learn.com</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-center flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#" onclick="showHome()">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link mx-lg-2" href="#">Subjects</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link mx-lg-2" href="#">Books</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Year
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-hh"><a class="dropdown-item" href="#">Year_1</a></li>
+                                <li class="dropdown-hh"><a class="dropdown-item" href="#">Year_2</a></li>
+                                <li class="dropdown-hh"><a class="dropdown-item" href="#">Year_3</a></li>
+                            </ul>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </div>
+
+            <div class="profile-container">
+                <div class="profile-dropdown">
+                    <div class="profile-icon" id="navProfileIcon">
+                        <img src="" alt="Profile">
+                    </div>
+                    
+                    <div class="dropdown-content">
+                        <div class="profile-header">
+                            <div class="profile-icon" id="dropdownProfileIcon">
+                                <img src="" alt="Profile">
+                            </div>
+                            <div class="profile-info">
+                                <h5 id="dropdownUsername"></h5>
+                                <p id="dropdownUserRole">Student</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Add this accounts section -->
+                        <div class="accounts-section">
+                            <div class="dropdown-item" onclick="showAccountSwitcher()">
+                                <i class="fas fa-exchange-alt"></i>
+                                <span>Switch Account</span>
+                            </div>
+                            <div class="dropdown-item" onclick="showAddAccountForm()">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Add Account</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Rest of your existing dropdown items -->
+                        <a href="profile.html" class="dropdown-item" onclick="showProfilePage()">
+                            <i class="fas fa-user"></i>
+                            <span>My Profile</span>
+                        </a>
+                        
+                        <div class="friends-section">
+                            <a href="#" class="dropdown-item" onclick="showFriendsList(event)">
+                                <i class="fas fa-users"></i>
+                                <span>Friends</span>
+                                <span class="friends-count" id="friendsCount">0</span>
+                            </a>
+                            <a href="add-friends22.html" class="dropdown-item" onclick="openAddFriendsPage()">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Add Friends</span>
+                            </a>
+                            <a href="chat.html" class="dropdown-item" onclick="openChatPage()">
+                                <i class="icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#555">
+                                        <path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
+                                    </svg>
+                                </i>
+                                <span>Chats</span>
+                            </a>
+
+                        </div>
+                        <div class="logout-section">
+                        
+                        <a href="login.html" class="dropdown-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Log Out</span>
+                        </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+                    aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Friends List Modal -->
+    <div class="friends-modal" id="friendsModal">
+        <div class="friends-container">
+            <div class="friends-header">
+                <h3>Your Friends</h3>
+                <button class="close-friends" onclick="hideFriendsList()">&times;</button>
+            </div>
+            <div class="friends-list" id="friendsListContent">
+                <!-- Friends will be listed here -->
+            </div>
+        </div>
+    </div>
+    <div class="chat-modal" id="chatModal">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <img id="chatFriendAvatar" src="" alt="Friend" class="chat-avatar">
+                    <div>
+                        <div id="chatFriendName"></div>
+                        <div id="chatFriendStatus" class="friend-status"></div>
+                    </div>
+                </div>
+                <button class="chat-close" onclick="hideChat()">&times;</button>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                Friend is typing...
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="no-messages">
+                    Start a new conversation with <span id="chatFriendNamePlaceholder"></span>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+                <button class="chat-send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="container mt-5 pt-5 profile-page" id="profilePage">
+        <div class="profile-header-large">
+            <img id="profilePicLarge" src="" alt="Profile" class="profile-pic-large">
+            <div>
+                <h2 id="profileUsername"></h2>
+                <p id="profileEmail"></p>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="friendsStat">0</div>
+                        <div class="stat-label">Friends</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="coursesStat">0</div>
+                        <div class="stat-label">Courses</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="joinedStat">Today</div>
+                        <div class="stat-label">Joined</div>
+                    </div>
+                </div>
+                
+                <label for="profilePicUpload" class="btn-edit">Change Photo</label>
+                <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
+            </div>
+        </div>
+        
+        <div class="profile-bio">
+            <h4>About Me</h4>
+            <div id="bioDisplay"></div>
+            <div class="edit-bio" id="bioEdit">
+                <textarea id="bioTextarea" rows="3" placeholder="Tell us about yourself..."></textarea>
+                <button class="btn-edit" onclick="saveBio()">Save</button>
+                <button class="btn-edit" onclick="cancelEditBio()" style="background-color: #ccc; margin-left: 5px;">Cancel</button>
+            </div>
+            <button class="btn-edit" id="editBioBtn" onclick="editBio()">Edit Bio</button>
+        </div>
+        
+        <div>
+            <h4>My Accounts</h4>
+            <div class="accounts-list" id="accountsList">
+                <!-- Accounts will be listed here -->
+            </div>
+            <button class="btn-edit" onclick="addAccount()">Add Account</button>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (!loggedInUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            loadUserProfile();
+        });
+        
+        function loadUserProfile() {
+            const username = localStorage.getItem('loggedInUser');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[username];
+            
+            if (!user) {
+                logout();
+                return;
+            }
+            
+            // Update navbar profile
+            document.getElementById('navProfileIcon').querySelector('img').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('dropdownProfileIcon').querySelector('img').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('dropdownUsername').textContent = username;
+            
+            // Initialize user data if not exists
+            if (!user.friends) user.friends = [];
+            if (!user.courses) user.courses = [];
+            if (!user.bio) user.bio = "";
+            if (!user.accounts) user.accounts = [];
+            
+            // Update friends count
+            document.getElementById('friendsCount').textContent = user.friends.length;
+            document.getElementById('friendsStat').textContent = user.friends.length;
+            
+            // Save updated user data
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Profile picture upload handler
+            document.getElementById('profilePicUpload').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        user.profilePic = event.target.result;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        updateProfilePictures(event.target.result);
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        }
+        
+        function updateProfilePictures(newSrc) {
+            // Update all profile pictures on the page
+            document.querySelectorAll('.profile-icon img, #profilePicLarge').forEach(img => {
+                img.src = newSrc;
+            });
+        }
+        
+        function showProfilePage() {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('profilePage').style.display = 'block';
+            
+            const username = localStorage.getItem('loggedInUser');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[username];
+            
+            // Display profile info
+            document.getElementById('profileUsername').textContent = username;
+            document.getElementById('profileEmail').textContent = user.email || 'No email provided';
+            document.getElementById('profilePicLarge').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('friendsStat').textContent = user.friends.length;
+            document.getElementById('coursesStat').textContent = user.courses.length;
+            document.getElementById('joinedStat').textContent = user.joinDate || 'Today';
+            document.getElementById('bioDisplay').textContent = user.bio || "No bio yet. Click 'Edit Bio' to add one.";
+            
+            // Display linked accounts
+            const accountsList = document.getElementById('accountsList');
+            accountsList.innerHTML = '';
+            
+            user.accounts.forEach(account => {
+                const accountDiv = document.createElement('div');
+                accountDiv.className = 'dropdown-item';
+                accountDiv.innerHTML = `
+                    <i class="fas fa-user"></i>
+                    <span>${account.username}</span>
+                    <small>(${account.type})</small>
+                `;
+                accountsList.appendChild(accountDiv);
+            });
+        }
+        
+        function showHome() {
+            document.getElementById('homePage').style.display = 'block';
+            document.getElementById('profilePage').style.display = 'none';
+        }
+        
+        function editBio() {
+            const user = getCurrentUser();
+            document.getElementById('bioDisplay').style.display = 'none';
+            document.getElementById('bioEdit').style.display = 'block';
+            document.getElementById('editBioBtn').style.display = 'none';
+            document.getElementById('bioTextarea').value = user.bio || '';
+        }
+        
+        function saveBio() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = getCurrentUser();
+            user.bio = document.getElementById('bioTextarea').value;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            document.getElementById('bioDisplay').textContent = user.bio || "No bio yet. Click 'Edit Bio' to add one.";
+            document.getElementById('bioDisplay').style.display = 'block';
+            document.getElementById('bioEdit').style.display = 'none';
+            document.getElementById('editBioBtn').style.display = 'inline-block';
+        }
+        
+        function cancelEditBio() {
+            document.getElementById('bioDisplay').style.display = 'block';
+            document.getElementById('bioEdit').style.display = 'none';
+            document.getElementById('editBioBtn').style.display = 'inline-block';
+        }
+        
+        function addAccount() {
+            const username = prompt("Enter the username for the new account:");
+            if (username) {
+                const type = prompt("Enter account type (Student/Teacher/Admin):", "Student");
+                if (type) {
+                    const users = JSON.parse(localStorage.getItem('users'));
+                    const user = getCurrentUser();
+                    user.accounts.push({ username, type });
+                    localStorage.setItem('users', JSON.stringify(users));
+                    showProfilePage();
+                }
+            }
+        }
+        
+        function getCurrentUser() {
+            const username = localStorage.getItem('loggedInUser');
+            const users = JSON.parse(localStorage.getItem('users'));
+            return users[username];
+        }
+        
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'login.html';
+        }
+
+        // Toggle profile dropdown visibility with smooth transition
+        document.addEventListener('DOMContentLoaded', function () {
+            const profileDropdown = document.querySelector('.profile-dropdown');
+            const dropdownContent = document.querySelector('.dropdown-content');
+
+            profileDropdown.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent click from propagating to the document
+                dropdownContent.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function () {
+                dropdownContent.classList.remove('show');
+            });
+        });
+
+        function openAddFriendsPage() {
+            window.location.href = 'add-friends.html';
+        }
+
+        // Friends list functions
+        function showFriendsList(e) {
+            e.preventDefault();
+            const modal = document.getElementById('friendsModal');
+            modal.style.display = 'flex';
+            
+            const user = getCurrentUser();
+            const allUsers = JSON.parse(localStorage.getItem('users')) || {};
+            const friendsList = document.getElementById('friendsListContent');
+            friendsList.innerHTML = '';
+            
+            if (user.friends && user.friends.length === 0) {
+                friendsList.innerHTML = `
+                    <div class="no-friends">
+                        <i class="fas fa-user-friends"></i>
+                        <h4>No Friends Yet</h4>
+                        <p>Add some friends to see them here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Filter friends to only show those who are registered users
+            const validFriends = user.friends.filter(friendName => allUsers[friendName]);
+            
+            if (validFriends.length === 0) {
+                friendsList.innerHTML = `
+                    <div class="no-friends">
+                        <i class="fas fa-user-friends"></i>
+                        <h4>No Active Friends</h4>
+                        <p>Your friends haven't joined yet or you haven't added any</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            validFriends.forEach(friendName => {
+                const friend = allUsers[friendName];
+                const friendItem = document.createElement('div');
+                friendItem.className = 'friend-item';
+                
+                // Generate a random status (online/offline) for demo purposes
+                const isOnline = Math.random() > 0.5;
+                const statusText = isOnline ? 'Online' : 'Offline';
+                const statusClass = isOnline ? 'online' : 'offline';
+                
+                friendItem.innerHTML = `
+                    <img src="${friend.profilePic || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'}" 
+                         alt="${friendName}" class="friend-avatar">
+                    <div class="friend-info">
+                        <div class="friend-name">${friendName}</div>
+                        <div class="friend-status ${statusClass}">${statusText}</div>
+                        ${friend.email ? `<div class="friend-email">${friend.email}</div>` : ''}
+                    </div>
+                    <div class="friend-actions">
+                        <button class="friend-action-btn" onclick="removeFriend('${friendName}')" style="color: #ff6b6b;">
+                            <i class="fas fa-user-minus"></i> Remove
+                        </button>
+                    </div>
+                `;
+                
+                friendsList.appendChild(friendItem);
+            });
+        }
+    
+        function removeFriend(friendName) {
+            if (confirm(`Are you sure you want to remove ${friendName} from your friends?`)) {
+                const users = JSON.parse(localStorage.getItem('users'));
+                const username = localStorage.getItem('loggedInUser');
+                const user = users[username];
+
+                // Ensure the user and their friends list exist
+                if (user && user.friends) {
+                    // Remove the friend from the user's friends list
+                    user.friends = user.friends.filter(friend => friend !== friendName);
+
+                    // Save the updated user data back to localStorage
+                    localStorage.setItem('users', JSON.stringify(users));
+
+                    // Update the UI
+                    document.getElementById('friendsCount').textContent = user.friends.length;
+                    document.getElementById('friendsStat').textContent = user.friends.length;
+
+                    // Refresh the friends list
+                    showFriendsList({ preventDefault: () => {} });
+                }
+            }
+        }
+    
+        // Update the loadUserProfile function to initialize friends as an array if it doesn't exist
+        function loadUserProfile() {
+            const username = localStorage.getItem('loggedInUser');
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const user = users[username];
+            
+            if (!user) {
+                logout();
+                return;
+            }
+            
+            // Initialize friends array if it doesn't exist
+            if (!user.friends) {
+                user.friends = [];
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+            
+            // Rest of your existing loadUserProfile code...
+            document.getElementById('navProfileIcon').querySelector('img').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('dropdownProfileIcon').querySelector('img').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('dropdownUsername').textContent = username;
+            
+            // Initialize other user data if not exists
+            if (!user.courses) user.courses = [];
+            if (!user.bio) user.bio = "";
+            if (!user.accounts) user.accounts = [];
+            
+            // Update friends count
+            document.getElementById('friendsCount').textContent = user.friends.length;
+            document.getElementById('friendsStat').textContent = user.friends.length;
+            
+            // Save updated user data
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Profile picture upload handler
+            document.getElementById('profilePicUpload').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        user.profilePic = event.target.result;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        updateProfilePictures(event.target.result);
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                    // When adding a friend:
+                 user.friends.push(friendUsername);
+                }
+            });
+        }
+       
+    </script>
+    <script>
+        // Chat functionality
+        let currentChatFriend = null;
+
+        function messageFriend(friendName) {
+            currentChatFriend = friendName;
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const friend = users[friendName];
+
+            // Update chat header
+            document.getElementById('chatFriendName').textContent = friendName;
+            document.getElementById('chatFriendNamePlaceholder').textContent = friendName;
+            document.getElementById('chatFriendAvatar').src = 
+                friend.profilePic || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+
+            // Set online status
+            const statusElement = document.getElementById('chatFriendStatus');
+            statusElement.textContent = friend.isOnline ? 'Online' : 'Offline';
+            statusElement.className = friend.isOnline ? 'friend-status online' : 'friend-status offline';
+
+            // Load messages
+            loadMessages(friendName);
+
+            // Show chat modal
+            document.getElementById('chatModal').style.display = 'flex';
+
+            // Focus input
+            setTimeout(() => {
+                document.getElementById('chatInput').focus();
+            }, 100);
+        }
+
+        function hideChat() {
+            document.getElementById('chatModal').style.display = 'none';
+            currentChatFriend = null;
+        }
+
+        function loadMessages(friendName) {
+            const username = localStorage.getItem('loggedInUser');
+            const chatData = JSON.parse(localStorage.getItem('chatMessages')) || {};
+
+            // Initialize chat data if not exists
+            if (!chatData[username]) chatData[username] = {};
+            if (!chatData[username][friendName]) chatData[username][friendName] = [];
+
+            // Display messages
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+
+            if (chatData[username][friendName].length === 0) {
+                chatMessages.innerHTML = `
+                    <div class="no-messages">
+                        Start a new conversation with ${friendName}
+                    </div>
+                `;
+                return;
+            }
+
+            chatData[username][friendName].forEach(msg => {
+                const isSent = msg.sender === username;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isSent ? 'message-sent' : 'message-received'}`;
+                messageDiv.innerHTML = `
+                    ${msg.text}
+                    <div class="message-time">${msg.time}</div>
+                `;
+                chatMessages.appendChild(messageDiv);
+            });
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const messageText = input.value.trim();
+
+            if (messageText && currentChatFriend) {
+                const username = localStorage.getItem('loggedInUser');
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // Add message to chat data
+                const chatData = JSON.parse(localStorage.getItem('chatMessages')) || {};
+                if (!chatData[username]) chatData[username] = {};
+                if (!chatData[username][currentChatFriend]) chatData[username][currentChatFriend] = [];
+                chatData[username][currentChatFriend].push({
+                    sender: username,
+                    text: messageText,
+                    time: timeString
+                });
+
+                // Add message to the recipient's chat data
+                if (!chatData[currentChatFriend]) chatData[currentChatFriend] = {};
+                if (!chatData[currentChatFriend][username]) chatData[currentChatFriend][username] = [];
+                chatData[currentChatFriend][username].push({
+                    sender: username,
+                    text: messageText,
+                    time: timeString
+                });
+
+                // Save chat data to localStorage
+                localStorage.setItem('chatMessages', JSON.stringify(chatData));
+
+                // Display the message
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message message-sent';
+                messageDiv.innerHTML = `
+                    ${messageText}
+                    <div class="message-time">${timeString}</div>
+                `;
+
+                // Remove "no messages" if it's the first message
+                if (document.querySelector('.no-messages')) {
+                    chatMessages.innerHTML = '';
+                }
+
+                chatMessages.appendChild(messageDiv);
+                input.value = '';
+
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Initialize chat messages when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedMessages = localStorage.getItem('chatMessages');
+            if (!savedMessages) {
+                localStorage.setItem('chatMessages', JSON.stringify({}));
+            }
+
+            // Allow sending message with Enter key
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        function hideFriendsList() {
+            const modal = document.getElementById('friendsModal');
+            if (modal) {
+                modal.classList.add('hidden'); // Add the hidden class for transition
+                setTimeout(() => {
+                    modal.style.display = 'none'; // Hide the modal after the transition
+                    modal.classList.remove('hidden'); // Reset the class for future use
+                }, 300); // Match the transition duration
+            }
+        }
+
+        // Close friends modal when clicking outside the container
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('friendsModal');
+            const container = document.querySelector('.friends-container');
+            if (modal && e.target === modal && !container.contains(e.target)) {
+                hideFriendsList();
+            }
+        });
+    </script>
+    <script>
+        // ...existing code...
+
+        // Backup accounts to a secondary storage key
+        function backupAccounts() {
+            const users = localStorage.getItem('users');
+            if (users) {
+                localStorage.setItem('users_backup', users);
+            }
+        }
+
+        // Restore accounts from the backup if they are missing
+        function restoreAccounts() {
+            if (!localStorage.getItem('users')) {
+                const backup = localStorage.getItem('users_backup');
+                if (backup) {
+                    localStorage.setItem('users', backup);
+                    console.log('Accounts restored from backup.');
+                }
+            }
+        }
+
+        // Restore the currently logged-in account if missing
+        function restoreLoggedInAccount() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            if (loggedInUser && !users[loggedInUser]) {
+                const backup = JSON.parse(localStorage.getItem('users_backup')) || {};
+                if (backup[loggedInUser]) {
+                    users[loggedInUser] = backup[loggedInUser];
+                    localStorage.setItem('users', JSON.stringify(users));
+                    console.log(`Logged-in account "${loggedInUser}" restored from backup.`);
+                }
+            }
+        }
+
+        // Call restoreAccounts and restoreLoggedInAccount on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            restoreAccounts();
+            restoreLoggedInAccount();
+            // Backup accounts periodically to prevent data loss
+            setInterval(backupAccounts, 60000); // Backup every 60 seconds
+        });
+
+        // Prevent accidental deletion of accounts
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'users' && !event.newValue) {
+                restoreAccounts();
+                restoreLoggedInAccount();
+                console.log('Accounts restored after deletion attempt.');
+            }
+        });
+
+        // ...existing code...
+    </script>
+    <!-- Account Switcher Modal -->
+<div class="friends-modal" id="accountSwitcherModal">
+    <div class="friends-container">
+        <div class="friends-header">
+            <h3>Switch Account</h3>
+            <button class="close-friends" onclick="hideAccountSwitcher()">&times;</button>
+        </div>
+        <div class="friends-list" id="accountList">
+            <!-- Accounts will be listed here -->
+        </div>
+    </div>
+</div>
+
+<!-- Add Account Modal -->
+<div class="friends-modal" id="addAccountModal">
+    <div class="friends-container">
+        <div class="friends-header">
+            <h3>Add New Account</h3>
+            <button class="close-friends" onclick="hideAddAccountForm()">&times;</button>
+        </div>
+        <div class="friends-list" style="padding: 20px;">
+            <div class="mb-3">
+                <label for="newAccountUsername" class="form-label">Username</label>
+                <input type="text" class="form-control" id="newAccountUsername" placeholder="Enter username">
+            </div>
+            <div class="mb-3">
+                <label for="newAccountPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="newAccountPassword" placeholder="Enter password">
+            </div>
+            <div class="mb-3">
+                <label for="newAccountType" class="form-label">Account Type</label>
+                <select class="form-select" id="newAccountType">
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <button class="btn-edit" onclick="addNewAccount()" style="width: 100%;">Add Account</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ...existing code...
+
+    // Account switching functionality
+    function showAccountSwitcher() {
+        const modal = document.getElementById('accountSwitcherModal');
+        const accountList = document.getElementById('accountList');
+        const currentUser = localStorage.getItem('loggedInUser');
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+        const user = users[currentUser];
+        
+        // Clear previous list
+        accountList.innerHTML = '';
+        
+        if (!user || !user.accounts || user.accounts.length === 0) {
+            accountList.innerHTML = `
+                <div class="no-friends">
+                    <i class="fas fa-user"></i>
+                    <h4>No Additional Accounts</h4>
+                    <p>Add accounts to switch between them</p>
+                </div>
+            `;
+        } else {
+            // Add current account
+            const currentAccountItem = document.createElement('div');
+            currentAccountItem.className = 'friend-item';
+            currentAccountItem.style.backgroundColor = '#f0f8ff';
+            currentAccountItem.innerHTML = `
+                <div class="friend-info">
+                    <div class="friend-name">${currentUser} (Current)</div>
+                    <div class="friend-status">Main Account</div>
+                </div>
+            `;
+            accountList.appendChild(currentAccountItem);
+            
+            // Add other accounts
+            user.accounts.forEach(account => {
+                const accountItem = document.createElement('div');
+                accountItem.className = 'friend-item';
+                accountItem.onclick = () => switchToAccount(account.username);
+                accountItem.innerHTML = `
+                    <div class="friend-info">
+                        <div class="friend-name">${account.username}</div>
+                        <div class="friend-status">${account.type}</div>
+                    </div>
+                `;
+                accountList.appendChild(accountItem);
+            });
+        }
+        
+        modal.style.display = 'flex';
+        document.querySelector('.dropdown-content').classList.remove('show');
+    }
+
+    function hideAccountSwitcher() {
+        document.getElementById('accountSwitcherModal').style.display = 'none';
+    }
+
+    function switchToAccount(username) {
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+        
+        if (users[username]) {
+            // If the account exists in main users, switch to it
+            localStorage.setItem('loggedInUser', username);
+            window.location.reload();
+        } else {
+            alert("This account doesn't exist in our system. Please log in with this account first.");
+        }
+        
+        hideAccountSwitcher();
+    }
+
+    // Add account functionality
+    function showAddAccountForm() {
+        document.getElementById('addAccountModal').style.display = 'flex';
+        document.querySelector('.dropdown-content').classList.remove('show');
+        // Clear form
+        document.getElementById('newAccountUsername').value = '';
+        document.getElementById('newAccountPassword').value = '';
+        document.getElementById('newAccountType').value = 'Student';
+    }
+
+    function hideAddAccountForm() {
+        document.getElementById('addAccountModal').style.display = 'none';
+    }
+
+    function addNewAccount() {
+        const username = document.getElementById('newAccountUsername').value.trim();
+        const password = document.getElementById('newAccountPassword').value.trim();
+        const type = document.getElementById('newAccountType').value;
+        const currentUser = localStorage.getItem('loggedInUser');
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+        const user = users[currentUser];
+        
+        if (!username || !password) {
+            alert('Please enter both username and password');
+            return;
+        }
+        
+        // Check if account already exists in user's linked accounts
+        if (user.accounts.some(acc => acc.username === username)) {
+            alert('This account is already linked to your profile');
+            return;
+        }
+        
+        // Check if the account exists in the system
+        if (users[username]) {
+            // Verify password
+            if (users[username].password !== password) {
+                alert('Incorrect password for this account');
+                return;
+            }
+            
+            // Add to current user's accounts
+            user.accounts.push({ username, type });
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Account linked successfully!');
+            hideAddAccountForm();
+        } else {
+            // Create a new account
+            if (confirm('This username doesn\'t exist. Create a new account?')) {
+                // Create minimal user data
+                users[username] = {
+                    password: password,
+                    name: username,
+                    email: '',
+                    joinDate: new Date().toLocaleDateString(),
+                    profilePic: null,
+                    friends: [],
+                    courses: [],
+                    bio: "",
+                    accounts: [] // New accounts start with no linked accounts
+                };
+                
+                // Add to current user's accounts
+                user.accounts.push({ username, type });
+                
+                // Save changes
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('New account created and linked successfully!');
+                hideAddAccountForm();
+            }
+        }
+    }
+
+    // Update the loadUserProfile function to initialize accounts array
+    function loadUserProfile() {
+        const username = localStorage.getItem('loggedInUser');
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+        const user = users[username];
+        
+        if (!user) {
+            logout();
+            return;
+        }
+        
+        // Initialize accounts array if it doesn't exist
+        if (!user.accounts) {
+            user.accounts = [];
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        // Rest of your existing loadUserProfile code...
+        document.getElementById('navProfileIcon').querySelector('img').src = 
+            user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+        document.getElementById('dropdownProfileIcon').querySelector('img').src = 
+            user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+        document.getElementById('dropdownUsername').textContent = username;
+        
+        // Update role display if available
+        const currentAccount = user.accounts.find(acc => acc.username === username);
+        if (currentAccount) {
+            document.getElementById('dropdownUserRole').textContent = currentAccount.type;
+        }
+        
+        // Initialize other user data if not exists
+        if (!user.friends) user.friends = [];
+        if (!user.courses) user.courses = [];
+        if (!user.bio) user.bio = "";
+        
+        // Update friends count
+        document.getElementById('friendsCount').textContent = user.friends.length;
+        
+        // Save updated user data
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Profile picture upload handler
+        document.getElementById('profilePicUpload').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    user.profilePic = event.target.result;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    updateProfilePictures(event.target.result);
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    }
+
+    // ...existing code...
+</script>
+
+</body>
+</html>
