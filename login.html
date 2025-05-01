@@ -572,6 +572,47 @@
                 window.location.href = 'website333.html';
             }
         });
+
+
+        // Simulate cross-device sync by using a shared localStorage key pattern
+function syncUsersAcrossDevices() {
+    // This is a simulation - in a real app you'd use a proper backend
+    console.log("Attempting to sync users across devices...");
+    
+    // Check if we have any synced users
+    const syncedUsers = localStorage.getItem('syncedUsers');
+    if (syncedUsers) {
+        const localUsers = JSON.parse(localStorage.getItem('users')) || {};
+        const remoteUsers = JSON.parse(syncedUsers);
+        
+        // Merge users - remote takes precedence
+        const mergedUsers = {...localUsers, ...remoteUsers};
+        localStorage.setItem('users', JSON.stringify(mergedUsers));
+    }
+    
+    // Periodically attempt to sync
+    setInterval(() => {
+        const users = localStorage.getItem('users');
+        if (users) {
+            localStorage.setItem('syncedUsers', users);
+        }
+    }, 5000); // Sync every 5 seconds
+}
+
+// Call this on page load
+document.addEventListener('DOMContentLoaded', function() {
+    syncUsersAcrossDevices();
+    
+    // Also listen for storage events from other tabs/devices
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'syncedUsers') {
+            const localUsers = JSON.parse(localStorage.getItem('users')) || {};
+            const remoteUsers = JSON.parse(event.newValue);
+            const mergedUsers = {...localUsers, ...remoteUsers};
+            localStorage.setItem('users', JSON.stringify(mergedUsers));
+        }
+    });
+});
     </script>
 </body>
 </html>

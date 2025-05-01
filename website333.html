@@ -1331,6 +1331,154 @@
 
     // ...existing code...
 </script>
+<script>
+    // ...existing code...
+
+    // Enhanced chat functions
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const messageText = input.value.trim();
+
+        if (messageText && currentChatFriend) {
+            const username = localStorage.getItem('loggedInUser');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Add message to chat data
+            const chatData = JSON.parse(localStorage.getItem('chatMessages')) || {};
+            if (!chatData[username]) chatData[username] = {};
+            if (!chatData[username][currentChatFriend]) chatData[username][currentChatFriend] = [];
+            chatData[username][currentChatFriend].push({
+                sender: username,
+                text: messageText,
+                time: timeString,
+                timestamp: now.getTime() // Add timestamp for ordering
+            });
+
+            // Add message to the recipient's chat data
+            if (!chatData[currentChatFriend]) chatData[currentChatFriend] = {};
+            if (!chatData[currentChatFriend][username]) chatData[currentChatFriend][username] = [];
+            chatData[currentChatFriend][username].push({
+                sender: username,
+                text: messageText,
+                time: timeString,
+                timestamp: now.getTime()
+            });
+
+            // Save chat data to localStorage
+            localStorage.setItem('chatMessages', JSON.stringify(chatData));
+            
+            // Also save to a synced version for cross-device
+            localStorage.setItem('syncedChatMessages', JSON.stringify(chatData));
+
+            // Display the message
+            displayNewMessage(username, messageText, timeString, true);
+            input.value = '';
+        }
+    }
+
+    // New function to display messages
+    function displayNewMessage(sender, text, time, isSent) {
+        const chatMessages = document.getElementById('chatMessages');
+        
+        // Remove "no messages" if it's the first message
+        if (document.querySelector('.no-messages')) {
+            chatMessages.innerHTML = '';
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isSent ? 'message-sent' : 'message-received'}`;
+        messageDiv.innerHTML = `
+            ${text}
+            <div class="message-time">${time}</div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Enhanced loadMessages function
+    function loadMessages(friendName) {
+        const username = localStorage.getItem('loggedInUser');
+        let chatData = JSON.parse(localStorage.getItem('chatMessages')) || {};
+        
+        // Check for synced messages from other devices
+        const syncedChatData = JSON.parse(localStorage.getItem('syncedChatMessages')) || {};
+        chatData = {...chatData, ...syncedChatData};
+        localStorage.setItem('chatMessages', JSON.stringify(chatData));
+
+        // Initialize chat data if not exists
+        if (!chatData[username]) chatData[username] = {};
+        if (!chatData[username][friendName]) chatData[username][friendName] = [];
+
+        // Display messages
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+
+        if (chatData[username][friendName].length === 0) {
+            chatMessages.innerHTML = `
+                <div class="no-messages">
+                    Start a new conversation with ${friendName}
+                </div>
+            `;
+            return;
+        }
+
+        // Sort messages by timestamp
+        const sortedMessages = chatData[username][friendName].sort((a, b) => a.timestamp - b.timestamp);
+        
+        sortedMessages.forEach(msg => {
+            const isSent = msg.sender === username;
+            displayNewMessage(msg.sender, msg.text, msg.time, isSent);
+        });
+    }
+
+    // Listen for new messages from other devices
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'syncedChatMessages' && currentChatFriend) {
+            const username = localStorage.getItem('loggedInUser');
+            const chatData = JSON.parse(event.newValue) || {};
+            
+            if (chatData[username] && chatData[username][currentChatFriend]) {
+                const newMessages = chatData[username][currentChatFriend];
+                const existingMessages = JSON.parse(localStorage.getItem('chatMessages')) || {};
+                
+                if (!existingMessages[username]) existingMessages[username] = {};
+                if (!existingMessages[username][currentChatFriend]) {
+                    existingMessages[username][currentChatFriend] = [];
+                }
+                
+                // Add only new messages
+                newMessages.forEach(newMsg => {
+                    const exists = existingMessages[username][currentChatFriend].some(
+                        msg => msg.timestamp === newMsg.timestamp
+                    );
+                    
+                    if (!exists) {
+                        existingMessages[username][currentChatFriend].push(newMsg);
+                        displayNewMessage(
+                            newMsg.sender, 
+                            newMsg.text, 
+                            newMsg.time, 
+                            newMsg.sender === username
+                        );
+                    }
+                });
+                
+                localStorage.setItem('chatMessages', JSON.stringify(existingMessages));
+            }
+        }
+    });
+
+    // Periodically check for new messages
+    setInterval(() => {
+        if (currentChatFriend) {
+            loadMessages(currentChatFriend);
+        }
+    }, 3000); // Check every 3 seconds
+
+    // ...existing code...
+</script>
 
 </body>
 </html>
