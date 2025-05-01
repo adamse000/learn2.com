@@ -568,45 +568,48 @@
             loadUserProfile();
         });
         
-        async function loadUserProfile() {
-            const accessToken = localStorage.getItem('accessToken');
+        function loadUserProfile() {
             const username = localStorage.getItem('loggedInUser');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[username];
             
-            if (!accessToken || !username) {
+            if (!user) {
                 logout();
                 return;
             }
             
-            try {
-                const response = await fetch(`http://localhost:3000/api/user/${username}`, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to load user profile');
+            // Update navbar profile
+            document.getElementById('navProfileIcon').querySelector('img').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('dropdownProfileIcon').querySelector('img').src = 
+                user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+            document.getElementById('dropdownUsername').textContent = username;
+            
+            // Initialize user data if not exists
+            if (!user.friends) user.friends = [];
+            if (!user.courses) user.courses = [];
+            if (!user.bio) user.bio = "";
+            if (!user.accounts) user.accounts = [];
+            
+            // Update friends count
+            document.getElementById('friendsCount').textContent = user.friends.length;
+            document.getElementById('friendsStat').textContent = user.friends.length;
+            
+            // Save updated user data
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Profile picture upload handler
+            document.getElementById('profilePicUpload').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        user.profilePic = event.target.result;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        updateProfilePictures(event.target.result);
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
                 }
-                
-                const user = await response.json();
-                
-                // Update navbar profile
-                document.getElementById('navProfileIcon').querySelector('img').src = 
-                    user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
-                document.getElementById('dropdownProfileIcon').querySelector('img').src = 
-                    user.profilePic || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
-                document.getElementById('dropdownUsername').textContent = username;
-                
-                // Update friends count
-                document.getElementById('friendsCount').textContent = user.friends.length;
-                document.getElementById('friendsStat').textContent = user.friends.length;
-                
-                // Register with socket.io
-                socket.emit('registerUser', username);
-            } catch (error) {
-                console.error('Error loading profile:', error);
-                logout();
-            }
+            });
         }
         
         function updateProfilePictures(newSrc) {
@@ -1326,144 +1329,7 @@
         });
     }
 
-
     // ...existing code...
-
-
-
-
-
-    // Add this to your existing JavaScript in website333.html
-
-// Initialize Socket.io
-const socket = io('http://localhost:3000');
-
-// When user logs in, register with socket.io
-const loggedInUser = localStorage.getItem('loggedInUser');
-if (loggedInUser) {
-    socket.emit('registerUser', loggedInUser);
-}
-
-// Listen for new messages
-socket.on('newMessage', (message) => {
-    if (currentChatFriend === message.sender) {
-        // If chat is open with this friend, display the message
-        const chatMessages = document.getElementById('chatMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message message-received';
-        messageDiv.innerHTML = `
-            ${message.text}
-            <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-        `;
-        
-        // Remove "no messages" if it's the first message
-        if (document.querySelector('.no-messages')) {
-            chatMessages.innerHTML = '';
-        }
-        
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    } else {
-        // Show notification for new message
-        console.log(`New message from ${message.sender}`);
-    }
-});
-
-// Update the sendMessage function to use the API
-async function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const messageText = input.value.trim();
-
-    if (messageText && currentChatFriend) {
-        try {
-            const response = await fetch('http://localhost:3000/api/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                },
-                body: JSON.stringify({
-                    receiver: currentChatFriend,
-                    text: messageText
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-            
-            const message = await response.json();
-            
-            // Display the message
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message message-sent';
-            messageDiv.innerHTML = `
-                ${messageText}
-                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-            `;
-
-            // Remove "no messages" if it's the first message
-            if (document.querySelector('.no-messages')) {
-                chatMessages.innerHTML = '';
-            }
-
-            chatMessages.appendChild(messageDiv);
-            input.value = '';
-
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        } catch (error) {
-            console.error('Error sending message:', error);
-        }
-    }
-}
-
-// Update the loadMessages function to use the API
-async function loadMessages(friendName) {
-    try {
-        const response = await fetch(`http://localhost:3000/api/messages/${friendName}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load messages');
-        }
-        
-        const messages = await response.json();
-        
-        // Display messages
-        const chatMessages = document.getElementById('chatMessages');
-        chatMessages.innerHTML = '';
-
-        if (messages.length === 0) {
-            chatMessages.innerHTML = `
-                <div class="no-messages">
-                    Start a new conversation with ${friendName}
-                </div>
-            `;
-            return;
-        }
-
-        messages.forEach(msg => {
-            const isSent = msg.sender.username === loggedInUser;
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isSent ? 'message-sent' : 'message-received'}`;
-            messageDiv.innerHTML = `
-                ${msg.text}
-                <div class="message-time">${new Date(msg.timestamp).toLocaleTimeString()}</div>
-            `;
-            chatMessages.appendChild(messageDiv);
-        });
-
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    } catch (error) {
-        console.error('Error loading messages:', error);
-    }
-}
 </script>
 
 </body>

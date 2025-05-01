@@ -341,7 +341,13 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize localStorage with users if empty
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify({}));
+            }
+        });
+
         // Toggle between login and signup forms
         const toggleFormLink = document.getElementById('toggleFormLink');
         const toggleFormText = document.getElementById('toggleFormText');
@@ -406,11 +412,12 @@
         }
 
         // Login form submission
-        loginForm.addEventListener('submit', async function(e) {
+        loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
+            const users = JSON.parse(localStorage.getItem('users'));
             
             // Clear previous errors
             document.getElementById('usernameError').style.display = 'none';
@@ -430,47 +437,42 @@
                 return;
             }
             
-            try {
-                const response = await fetch('http://localhost:3000/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Login failed');
-                }
-                
-                // Store token in localStorage
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('loggedInUser', username);
-                
-                // Show success message
-                document.getElementById('loginSuccess').textContent = 'Login successful! Redirecting...';
-                document.getElementById('loginSuccess').style.display = 'block';
-                
-                // Redirect to main page after a delay
-                setTimeout(function() {
-                    window.location.href = 'website333.html';
-                }, 1000);
-            } catch (error) {
-                document.getElementById('passwordError').textContent = error.message;
-                document.getElementById('passwordError').style.display = 'block';
+            // Check if user exists
+            if (!users[username]) {
+                document.getElementById('usernameError').textContent = 'Username not found';
+                document.getElementById('usernameError').style.display = 'block';
+                return;
             }
+            
+            // Check password
+            if (users[username].password !== password) {
+                document.getElementById('passwordError').textContent = 'Incorrect password';
+                document.getElementById('passwordError').style.display = 'block';
+                return;
+            }
+            
+            // Login successful
+            localStorage.setItem('loggedInUser', username);
+            
+            // Show success message
+            document.getElementById('loginSuccess').textContent = 'Login successful! Redirecting...';
+            document.getElementById('loginSuccess').style.display = 'block';
+            
+            // Redirect to main page after a delay
+            setTimeout(function() {
+                window.location.href = 'website333.html';
+            }, 1000);
         });
 
         // Signup form submission
-        signupForm.addEventListener('submit', async function(e) {
+        signupForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const username = document.getElementById('signupUsername').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value.trim();
             const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            const users = JSON.parse(localStorage.getItem('users'));
             
             // Clear previous errors
             document.getElementById('signupUsernameError').style.display = 'none';
@@ -488,6 +490,12 @@
             
             if (username.length < 4) {
                 document.getElementById('signupUsernameError').textContent = 'Username must be at least 4 characters';
+                document.getElementById('signupUsernameError').style.display = 'block';
+                return;
+            }
+            
+            if (users[username]) {
+                document.getElementById('signupUsernameError').textContent = 'Username already exists';
                 document.getElementById('signupUsernameError').style.display = 'block';
                 return;
             }
@@ -522,63 +530,48 @@
                 return;
             }
             
-            try {
-                const response = await fetch('http://localhost:3000/api/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, email, password })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Registration failed');
-                }
-                
-                // Show success message
-                document.getElementById('signupSuccess').textContent = 'Account created successfully! You can now log in.';
-                document.getElementById('signupSuccess').style.display = 'block';
-                
-                // Clear form
-                document.getElementById('signupUsername').value = '';
-                document.getElementById('signupEmail').value = '';
-                document.getElementById('signupPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-                
-                // Switch back to login form after a delay
-                setTimeout(function() {
-                    loginForm.style.display = 'block';
-                    signupForm.style.display = 'none';
-                    toggleFormLink.textContent = 'Sign up';
-                    toggleFormText.textContent = "Don't have an account? ";
-                    document.getElementById('signupSuccess').style.display = 'none';
-                }, 2000);
-            } catch (error) {
-                if (error.message.includes('username')) {
-                    document.getElementById('signupUsernameError').textContent = error.message;
-                    document.getElementById('signupUsernameError').style.display = 'block';
-                } else if (error.message.includes('email')) {
-                    document.getElementById('signupEmailError').textContent = error.message;
-                    document.getElementById('signupEmailError').style.display = 'block';
-                } else {
-                    document.getElementById('signupUsernameError').textContent = error.message;
-                    document.getElementById('signupUsernameError').style.display = 'block';
-                }
-            }
+            // Create new user
+            users[username] = {
+                password: password,
+                email: email,
+                name: username,
+                joinDate: new Date().toLocaleDateString(),
+                profilePic: null,
+                friends: [],
+                courses: [],
+                bio: "",
+                accounts: []
+            };
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Show success message
+            document.getElementById('signupSuccess').textContent = 'Account created successfully! You can now log in.';
+            document.getElementById('signupSuccess').style.display = 'block';
+            
+            // Clear form
+            document.getElementById('signupUsername').value = '';
+            document.getElementById('signupEmail').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            // Switch back to login form after a delay
+            setTimeout(function() {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                toggleFormLink.textContent = 'Sign up';
+                toggleFormText.textContent = "Don't have an account? ";
+                document.getElementById('signupSuccess').style.display = 'none';
+            }, 2000);
         });
 
         // Check if user is already logged in and redirect
         window.addEventListener('load', function() {
             const loggedInUser = localStorage.getItem('loggedInUser');
-            const accessToken = localStorage.getItem('accessToken');
-            
-            if (loggedInUser && accessToken) {
+            if (loggedInUser) {
                 window.location.href = 'website333.html';
             }
         });
-    });
-</script>
+    </script>
 </body>
 </html>
